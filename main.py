@@ -1,10 +1,10 @@
 import cv2
 import numpy as np
 import tkinter as tk
-from tkinter import filedialog
+from tkinter import filedialog, ttk
 from PIL import Image, ImageTk
+import os
 
-# Hàm KMeans thủ công
 def my_kmeans(pixels, k, max_iters=10):
     n_samples, n_features = pixels.shape
     random_idx = np.random.choice(n_samples, k, replace=False)
@@ -23,7 +23,6 @@ def my_kmeans(pixels, k, max_iters=10):
 
     return labels, centroids
 
-# Hàm xử lý ảnh
 def Xu_ly_anh(img_path, k, is_gray=False, use_custom=False):
     image = cv2.imread(img_path)
     if image is None:
@@ -52,7 +51,6 @@ def Xu_ly_anh(img_path, k, is_gray=False, use_custom=False):
 
     return segmented_image
 
-# Chọn ảnh
 def select_image():
     file_path = filedialog.askopenfilename()
     if file_path:
@@ -77,12 +75,18 @@ def process_image():
     if kq is not None:
         display_image(kq)
 
-# Hiển thị ảnh
 def display_image(image):
     image = Image.fromarray(image)
     image = ImageTk.PhotoImage(image)
     label_image.config(image=image)
     label_image.image = image
+
+def add_data_selector(frame, entry):
+    files = [f"data/{f}" for f in os.listdir("data") if f.lower().endswith(('.jpg','.png','.jpeg'))]
+    combo = ttk.Combobox(frame, values=files, width=37)
+    combo.grid(row=5, column=0, columnspan=2, pady=5)
+    combo.bind("<<ComboboxSelected>>", lambda e: (entry.delete(0, tk.END), entry.insert(0, combo.get())))
+    return combo
 
 # Giao diện tkinter
 root = tk.Tk()
@@ -114,6 +118,9 @@ chk_custom.grid(row=3, column=0, columnspan=2)
 
 btn_process = tk.Button(frame, text="Xử lý ảnh", command=process_image)
 btn_process.grid(row=4, column=0, columnspan=2, pady=10)
+
+# Thêm combobox chọn ảnh từ folder data
+combo_data = add_data_selector(frame, entry_path)
 
 label_image = tk.Label(root)
 label_image.pack()
